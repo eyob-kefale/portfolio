@@ -178,18 +178,23 @@ function DropboxIcon() {
 
 function useInView(options?: IntersectionObserverInit) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
+  // Default to true so content is never hidden or blank on mobile/slow devices
+  const [isInView, setIsInView] = useState(true);
 
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setIsInView(true);
-        observer.unobserve(element);
       }
-    }, { threshold: 0.1, ...options });
+    }, { threshold: 0.05, rootMargin: "120px 0px 120px 0px", ...options });
 
     observer.observe(element);
     return () => observer.disconnect();
@@ -217,31 +222,55 @@ function CrackMergeImage({
   alt,
   className = "",
   showBadge = true,
+  intervalSeconds = 3.5,
 }: {
   src: string;
   alt: string;
   className?: string;
   showBadge?: boolean;
+  intervalSeconds?: number;
 }) {
   const [isCracked, setIsCracked] = useState(false);
   const [isMerging, setIsMerging] = useState(false);
 
+  // Automatically shatter (crack) and merge continuously with specified seconds
+  useEffect(() => {
+    const intervalMs = Math.max(2000, intervalSeconds * 1000);
+    const timer = setInterval(() => {
+      setIsCracked((prev) => {
+        if (prev) {
+          // Shards are currently separated: trigger merge & neon flash burst
+          setIsMerging(true);
+          setTimeout(() => setIsMerging(false), 750);
+          return false;
+        } else {
+          // Image is currently intact: shatter into 3D shards
+          return true;
+        }
+      });
+    }, intervalMs);
+
+    return () => clearInterval(timer);
+  }, [intervalSeconds]);
+
   const toggleCrack = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (isCracked) {
-      setIsMerging(true);
-      setIsCracked(false);
-      setTimeout(() => setIsMerging(false), 750);
-    } else {
-      setIsCracked(true);
-    }
+    setIsCracked((prev) => {
+      if (prev) {
+        setIsMerging(true);
+        setTimeout(() => setIsMerging(false), 750);
+        return false;
+      } else {
+        return true;
+      }
+    });
   };
 
   return (
     <div
       className={`crack-merge-container ${isCracked ? "is-cracked" : ""} ${className}`}
       onClick={() => toggleCrack()}
-      title="Click to Shatter into pieces / Merge back"
+      title={`Auto-morphing every ${intervalSeconds}s • Tap to toggle instantly`}
     >
       {/* Pristine Intact Image */}
       <div className="crack-original-layer">
@@ -276,7 +305,7 @@ function CrackMergeImage({
       {/* Merge Flash Burst */}
       <div className={`crack-flash-overlay ${isMerging ? "merging" : ""}`} />
 
-      {/* Interactive Toggle Badge */}
+      {/* Auto-cycle Status & Interactive Toggle Badge */}
       {showBadge && (
         <button
           type="button"
@@ -285,9 +314,11 @@ function CrackMergeImage({
             e.stopPropagation();
             toggleCrack();
           }}
-          aria-label={isCracked ? "Merge image pieces" : "Shatter image in pieces"}
+          aria-label={isCracked ? "Auto Merging" : "Auto Shattering"}
+          title={`Auto shattering & merging every ${intervalSeconds}s (Click to toggle)`}
         >
-          {isCracked ? "✨ Merge Portrait" : "⚡ Shatter in Pieces"}
+          <span className="crack-status-pulse" />
+          {/* {isCracked ? "⚡ Shattered (Auto 3.5s)" : "✨ Intact (Auto 3.5s)"} */}
         </button>
       )}
     </div>
@@ -425,7 +456,7 @@ const projectsList: ProjectItem[] = [
     title: "Ethiopian Diabetes Association Official Platform",
     category: ["all", "production", "web"],
     description: "Developed and launched the official responsive web platform (ethdiabetes.org) featuring content management workflows, accessible UI patterns, and optimized SEO structures to streamline communication between health professionals and patients.",
-    image: "/project-dashboard.jpg",
+    image: "/project-diabetes.png",
     tags: ["React", "CMS", "Accessible UI", "SEO", "Healthcare"],
     statusBadge: { label: "Live Platform", type: "live" },
     liveUrl: "https://ethdiabetes.org",
@@ -642,6 +673,18 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const handleNavClick = () => {
     setMobileMenuOpen(false);
   };
@@ -682,10 +725,20 @@ export default function Home() {
           <button
             type="button"
             className={`mobile-menu-btn ${mobileMenuOpen ? "active" : ""}`}
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setMobileMenuOpen((prev) => !prev);
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setMobileMenuOpen((prev) => !prev);
+            }}
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
             id="mobile-menu-btn"
+            style={{ cursor: "pointer", zIndex: 999999, position: "relative" }}
           >
             <span /><span /><span />
           </button>
@@ -696,37 +749,57 @@ export default function Home() {
       <div
         className={`mobile-nav-overlay ${mobileMenuOpen ? "open" : ""}`}
         id="mobile-nav-drawer"
+        style={{ display: mobileMenuOpen ? "flex" : "none" }}
         aria-hidden={!mobileMenuOpen}
       >
-        <button
-          type="button"
-          className="mobile-drawer-close"
-          onClick={() => setMobileMenuOpen(false)}
-          aria-label="Close menu"
-        >
-          ✕
-        </button>
-        <a href="#hero" onClick={handleNavClick}>Home</a>
-        <a href="#about" onClick={handleNavClick}>About &amp; Resume</a>
-        <a href="#services" onClick={handleNavClick}>Services</a>
-        <a href="#projects" onClick={handleNavClick}>Portfolio</a>
-        <a href="#certificates" onClick={handleNavClick}>Certificates</a>
-        <a href="#contact" onClick={handleNavClick} className="mobile-cta">Contact Me</a>
+        <div className="mobile-nav-header">
+          <a href="#hero" className="logo" onClick={handleNavClick}>
+            <span className="logo-dot" />
+            Eyob<span style={{ color: "var(--accent)" }}>.</span>
+          </a>
+          <button
+            type="button"
+            className="mobile-drawer-close"
+            onClick={() => setMobileMenuOpen(false)}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              setMobileMenuOpen(false);
+            }}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+        <nav className="mobile-nav-links">
+          <a href="#hero" onClick={handleNavClick}>Home</a>
+          <a href="#about" onClick={handleNavClick}>About &amp; Resume</a>
+          <a href="#services" onClick={handleNavClick}>Services</a>
+          <a href="#projects" onClick={handleNavClick}>Portfolio</a>
+          <a href="#certificates" onClick={handleNavClick}>Certificates</a>
+          <a href="#contact" onClick={handleNavClick} className="mobile-cta">Contact Me</a>
+        </nav>
       </div>
 
       {/* ───────── HERO SECTION ───────── */}
       <section className="hero" id="hero">
         <div className="hero-inner">
           <div className="hero-content">
-            <div className="hero-badge">
-              <span className="hero-badge-dot" />
-              Fullstack Engineer @ Right tech solution plc
+            <div className="hero-badges-group">
+              <div className="hero-badge">
+                <span className="hero-badge-dot" />
+                Fullstack Engineer @ Right tech solution plc
+              </div>
+              <div className="hero-badge alx-hero-badge">
+                <span className="alx-hero-icon">🎓</span>
+                ALX Software Engineering Graduate
+              </div>
             </div>
+
             <h1 className="hero-title" id="hero-title">
               Hi, I&apos;m <span className="accent">Eyob Kefale</span> — Full Stack Engineer
             </h1>
             <p className="hero-description" id="hero-description">
-              Versatile Full-Stack &amp; Mobile Developer, ALX Software Engineering graduate,
+              Versatile Full-Stack &amp; Mobile Developer, <strong>ALX Software Engineering graduate</strong>,
               and Wolkite University Software Engineering alumnus (CGPA: 3.67). Experienced
               in building reverse e-commerce platforms, Telebirr SuperApp Mini Apps, healthcare platforms,
               and enterprise stock systems.
@@ -749,11 +822,11 @@ export default function Home() {
                 Resume PDF
               </a>
               <a href="#certificates" className="btn-secondary" id="btn-certs-hero">
-                Certificates
+                ALX &amp; Certificates
               </a>
             </div>
 
-            {/* Strict stats based on user request: removing happy clients/projects completed, adding 47 GitHub repos, CGPA, current status */}
+            {/* Strict stats with 47 GitHub repos, CGPA, current status, and ALX */}
             <div className="hero-stats">
               <div className="stat-item">
                 <div className="stat-number">47</div>
@@ -768,8 +841,8 @@ export default function Home() {
                 <div className="stat-label">Right Tech Solution (Current)</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">12 Mo</div>
-                <div className="stat-label">ALX SWE Graduate</div>
+                <div className="stat-number">ALX SWE</div>
+                <div className="stat-label">12-Mo Certified Graduate</div>
               </div>
             </div>
           </div>
@@ -777,11 +850,12 @@ export default function Home() {
           <div className="hero-image-wrapper">
             <div className="hero-image-glow" />
             <div className="hero-image-container">
-              {/* Profile Image with Crack in Piece & Merge Animation! */}
+              {/* Profile Image with Automatic Shatter (Crack) in Pieces & Merge Animation! */}
               <CrackMergeImage
                 src="/profile-suit.png"
                 alt="Eyob Kefale - Fullstack Engineer"
                 showBadge={true}
+                intervalSeconds={3.5}
               />
             </div>
             <div className="hero-floating-card card-1">
@@ -800,6 +874,15 @@ export default function Home() {
               <div className="floating-text">
                 <strong>47 Repositories</strong>
                 <span>Public &amp; Private</span>
+              </div>
+            </div>
+            <div className="hero-floating-card card-3">
+              <div className="floating-icon alx">
+                <span>ALX</span>
+              </div>
+              <div className="floating-text">
+                <strong>ALX SWE Graduate</strong>
+                <span>Holberton / 12-Mo</span>
               </div>
             </div>
           </div>
@@ -885,15 +968,19 @@ function AboutSection({
               <div className="term-text accent">Eyob Kefale — Full Stack Software Engineer</div>
 
               <div className="terminal-row"><span className="term-prompt">$</span> <span className="term-cmd">cat profile.json</span></div>
-              <pre className="term-code">{`{
-  "role": "Fullstack Engineer",
-  "company": "Right tech solution plc",
-  "education": "BSc Software Eng (WKU, CGPA: 3.67)",
-  "fellowship": "ALX Software Engineering (12-Mo)",
-  "location": "Addis Ababa, Ethiopia",
-  "github_repos": 47,
-  "stack": ["Next.js", "React Native", "Node.js", "Telebirr API"]
-}`}</pre>
+
+              {/* Clear, Beautiful Syntax-Highlighted JSON with Pulse Animation */}
+              <div className="term-code" role="region" aria-label="profile.json content">
+                <div className="term-code-line"><span className="term-code-num">1</span><span className="json-brace">&#123;</span></div>
+                <div className="term-code-line"><span className="term-code-num">2</span>  <span className="json-key">&quot;role&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Fullstack Engineer&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">3</span>  <span className="json-key">&quot;company&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Right tech solution plc&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">4</span>  <span className="json-key">&quot;education&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;BSc Software Eng (WKU, CGPA: 3.67)&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">5</span>  <span className="json-key">&quot;fellowship&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;ALX Software Engineering (12-Mo)&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">6</span>  <span className="json-key">&quot;location&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Addis Ababa, Ethiopia&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">7</span>  <span className="json-key">&quot;github_repos&quot;</span><span className="json-punct">:</span> <span className="json-number">47</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">8</span>  <span className="json-key">&quot;stack&quot;</span><span className="json-punct">:</span> <span className="json-bracket">[</span><span className="json-string">&quot;Next.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;React Native&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Node.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Telebirr API&quot;</span><span className="json-bracket">]</span><span className="json-cursor" /></div>
+                <div className="term-code-line"><span className="term-code-num">9</span><span className="json-brace">&#125;</span></div>
+              </div>
 
               <div className="terminal-row"><span className="term-prompt">$</span> <span className="term-cmd">git status</span></div>
               <div className="term-badge-line">
@@ -908,7 +995,7 @@ function AboutSection({
               I&apos;m <strong>Eyob Kefale</strong>, a Software Engineer from Addis Ababa, Ethiopia.
               I hold a <strong>BSc in Software Engineering from Wolkite University (WKU)</strong> with a
               graduating <strong>CGPA of 3.67</strong>, alongside completion of the rigorous <strong>12-month
-              ALX Software Engineering programme</strong>.
+                ALX Software Engineering programme</strong>.
             </p>
             <p>
               Currently serving as a <strong>Fullstack Engineer at Right tech solution plc</strong> in Addis Ababa
@@ -918,13 +1005,14 @@ function AboutSection({
               auditing suites, and driver training management software.
             </p>
 
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.5rem" }}>
+            {/* Side-by-side action buttons: 2 in a row on all viewports */}
+            <div className="about-action-buttons">
               <a
                 href="/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary"
-                style={{ padding: "0.65rem 1.25rem", fontSize: "0.85rem" }}
+                id="about-resume-btn"
               >
                 <DownloadIcon /> Open Resume PDF
               </a>
@@ -933,7 +1021,7 @@ function AboutSection({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary"
-                style={{ padding: "0.65rem 1.25rem", fontSize: "0.85rem" }}
+                id="about-github-btn"
               >
                 <GithubIcon /> View GitHub (47 Repos)
               </a>
@@ -942,7 +1030,7 @@ function AboutSection({
         </div>
 
         {/* Categorized Skills */}
-        <div style={{ marginTop: "3rem" }}>
+        <div className="about-skills-wrapper">
           <h3 className="timeline-heading">Technical Proficiencies</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.25rem" }}>
             {skillCategories.map((cat, idx) => (
@@ -974,9 +1062,16 @@ function AboutSection({
 
         {/* Experience Timeline */}
         <div className="timeline-section">
-          <h3 className="timeline-heading">
-            <ServerIcon /> Professional Experience &amp; Engineering Roles
-          </h3>
+          <div className="timeline-header-wrap">
+            <h3 className="timeline-heading">
+              <ServerIcon /> Professional Experience &amp; Engineering Roles
+            </h3>
+            <div className="timeline-highlight-pill">
+              <span className="timeline-highlight-dot" />
+              <span>Selected Highlights (Key representative systems from broader multi-year commercial work)</span>
+            </div>
+          </div>
+
           <div className="timeline-grid">
             {experienceList.map((exp, index) => (
               <div className="timeline-card" key={index}>
@@ -998,6 +1093,10 @@ function AboutSection({
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="timeline-more-note">
+            <span>💡 <strong>Additional Engineering Engagements:</strong> These representative roles are backed by extensive additional freelance platforms, enterprise stock audits, internal automation suites, and Telebirr payment integration tools.</span>
           </div>
         </div>
       </div>
@@ -1068,7 +1167,7 @@ function ProjectsSection() {
             className={`filter-btn ${activeFilter === "all" ? "active" : ""}`}
             onClick={() => setActiveFilter("all")}
           >
-            All Works ({projectsList.length})
+            All Projects
           </button>
           <button
             className={`filter-btn ${activeFilter === "production" ? "active" : ""}`}
@@ -1114,15 +1213,14 @@ function ProjectsSection() {
 
                 <div className="project-card-top">
                   <span
-                    className={`project-status-badge ${
-                      project.statusBadge.type === "confidential"
-                        ? "badge-confidential"
-                        : project.statusBadge.type === "live"
+                    className={`project-status-badge ${project.statusBadge.type === "confidential"
+                      ? "badge-confidential"
+                      : project.statusBadge.type === "live"
                         ? "badge-live"
                         : project.statusBadge.type === "production"
-                        ? "badge-production"
-                        : "badge-opensource"
-                    }`}
+                          ? "badge-production"
+                          : "badge-opensource"
+                      }`}
                   >
                     {project.statusBadge.type === "confidential" && <LockIcon />}
                     {project.statusBadge.type === "live" && <CheckCircleIcon />}
@@ -1200,7 +1298,77 @@ function ProjectsSection() {
                 </div>
               </div>
             </div>
-          ))}
+        </div>
+
+        {/* 47+ Repositories & Competitive Programming / Kattis Showcase */}
+        <div className="kattis-competitive-card animate-in visible">
+          <div className="kattis-card-grid">
+            <div className="kattis-info-side">
+              <div className="kattis-badge">
+                <CodeIcon />
+                <span>Competitive Programming &amp; Algorithms</span>
+              </div>
+              <h3 className="kattis-title">47+ Repositories &amp; ETCPC Practice Algorithms</h3>
+              <p className="kattis-desc">
+                Beyond these highlighted production applications, my active engineering portfolio includes <strong>47 repositories</strong> across GitHub.
+                This spans complex algorithmic problem solving, data structures practice, and competitive solutions developed for the <strong>ETCPC (Ethiopian Collegiate Programming Contest)</strong>.
+              </p>
+              <div className="kattis-stats-row">
+                <div className="kattis-stat-box">
+                  <span className="kattis-stat-num">47+</span>
+                  <span className="kattis-stat-lbl">GitHub Repos</span>
+                </div>
+                <div className="kattis-stat-box">
+                  <span className="kattis-stat-num">ETCPC</span>
+                  <span className="kattis-stat-lbl">Contest Algos</span>
+                </div>
+                <div className="kattis-stat-box">
+                  <span className="kattis-stat-num">WKU</span>
+                  <span className="kattis-stat-lbl">Kattis Rank</span>
+                </div>
+              </div>
+              <div className="kattis-actions">
+                <a
+                  href="https://github.com/eyob-kefale"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                  id="kattis-github-btn"
+                >
+                  <GithubIcon /> Explore 47 Repositories
+                </a>
+                <a
+                  href="https://open.kattis.com/affiliations/wku.edu.et"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                  id="kattis-live-btn"
+                >
+                  <ExternalLinkIcon /> View Kattis WKU Leaderboard
+                </a>
+              </div>
+            </div>
+
+            <div className="kattis-preview-side">
+              <a
+                href="https://open.kattis.com/affiliations/wku.edu.et"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="kattis-img-link"
+                title="Click to view Wolkite University Kattis Leaderboard"
+              >
+                <img
+                  src="/kattis-leaderboard.png"
+                  alt="Wolkite University Kattis Problem Solving Leaderboard"
+                  className="kattis-leaderboard-img"
+                  loading="lazy"
+                />
+                <div className="kattis-overlay-tag">
+                  <span>open.kattis.com/affiliations/wku.edu.et ↗</span>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1311,27 +1479,7 @@ function CertificatesSection({
           ))}
         </div>
 
-        {/* Dropbox Integration Banner */}
-        <div className="dropbox-banner animate-in">
-          <div className="dropbox-banner-left">
-            <div className="dropbox-icon-box">
-              <DropboxIcon />
-            </div>
-            <div className="dropbox-banner-text">
-              <h4>Dropbox Credentials Vault Ready</h4>
-              <p>
-                Academic transcripts, degrees, and full-resolution certificates are hosted on Dropbox.
-                You can paste your custom certificate links or inspect documents upon request.
-              </p>
-            </div>
-          </div>
-          <a
-            href="mailto:eyobkefale1@gmail.com?subject=Certificate%20and%20Credential%20Request"
-            className="btn-dropbox-action"
-          >
-            <MailIcon /> Request Dropbox Access
-          </a>
-        </div>
+
       </div>
     </section>
   );
@@ -1354,130 +1502,138 @@ function ContactSection() {
           </p>
         </div>
 
-        <div className={`contact-grid animate-in ${isInView ? "visible" : ""}`}>
-          <div className="contact-info">
-            <h3>Direct Contact</h3>
-            <p>
-              I usually respond within a few hours. Feel free to connect for software engineering
-              collaborations, Telebirr Mini App development, or full-stack architectural inquiries.
+        <div className={`contact-showcase animate-in ${isInView ? "visible" : ""}`}>
+          <div className="contact-main-card">
+            <div className="contact-status-chip">
+              <span className="contact-pulse-dot" />
+              <span>Actively Available for High-Impact Roles &amp; Projects</span>
+            </div>
+
+            <h3 className="contact-card-heading">Direct Contact &amp; Inquiries</h3>
+            <p className="contact-card-sub">
+              I usually respond within a few hours. Connect directly for fullstack engineering roles,
+              Telebirr SuperApp Mini Apps, Next.js web applications, or technical consultations.
             </p>
 
-            <div className="contact-details">
-              <div className="contact-detail-item">
+            {/* Quick Action CTA Buttons */}
+            <div className="contact-quick-actions">
+              <a href="mailto:eyobkefale1@gmail.com" className="btn-contact-action primary" id="contact-email-btn">
+                <MailIcon />
+                <span>Send Email</span>
+              </a>
+              <a href="tel:+251934627307" className="btn-contact-action secondary" id="contact-phone-btn">
+                <PhoneIcon />
+                <span>Call / WhatsApp</span>
+              </a>
+              <a
+                href="https://github.com/eyob-kefale"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-contact-action secondary"
+                id="contact-github-btn"
+              >
+                <GithubIcon />
+                <span>GitHub (47 Repos)</span>
+              </a>
+            </div>
+
+            {/* Direct Details Grid */}
+            <div className="contact-details-grid">
+              <div className="contact-detail-box">
                 <div className="contact-detail-icon">
                   <MailIcon />
                 </div>
-                <div className="contact-detail-text">
-                  <strong>Email</strong>
-                  <a href="mailto:eyobkefale1@gmail.com">eyobkefale1@gmail.com</a>
+                <div className="contact-detail-content">
+                  <span className="contact-label">Email Address</span>
+                  <a href="mailto:eyobkefale1@gmail.com" className="contact-value">eyobkefale1@gmail.com</a>
                 </div>
               </div>
 
-              <div className="contact-detail-item">
+              <div className="contact-detail-box">
                 <div className="contact-detail-icon">
                   <PhoneIcon />
                 </div>
-                <div className="contact-detail-text">
-                  <strong>Phone / Mobile</strong>
-                  <span>+251 934 627 307 / 0716 663 621</span>
+                <div className="contact-detail-content">
+                  <span className="contact-label">Phone &amp; Telegram</span>
+                  <span className="contact-value">+251 934 627 307 / 0716 663 621</span>
                 </div>
               </div>
 
-              <div className="contact-detail-item">
+              <div className="contact-detail-box">
                 <div className="contact-detail-icon">
                   <MapPinIcon />
                 </div>
-                <div className="contact-detail-text">
-                  <strong>Location</strong>
-                  <span>Addis Ababa, Ethiopia</span>
+                <div className="contact-detail-content">
+                  <span className="contact-label">Location</span>
+                  <span className="contact-value">Addis Ababa, Ethiopia</span>
                 </div>
               </div>
 
-              <div className="contact-detail-item">
+              <div className="contact-detail-box">
                 <div className="contact-detail-icon">
-                  <GithubIcon />
+                  <LinkedinIcon />
                 </div>
-                <div className="contact-detail-text">
-                  <strong>GitHub Profile</strong>
-                  <a href="https://github.com/eyob-kefale" target="_blank" rel="noopener noreferrer">
-                    github.com/eyob-kefale (47 Repositories)
+                <div className="contact-detail-content">
+                  <span className="contact-label">LinkedIn Profile</span>
+                  <a
+                    href="https://www.linkedin.com/in/eyob-kefale-b017a6230/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="contact-value"
+                  >
+                    linkedin.com/in/eyob-kefale
                   </a>
                 </div>
               </div>
             </div>
 
-            <div className="social-links">
-              <a
-                href="https://github.com/eyob-kefale"
-                className="social-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                id="social-github"
-              >
-                <GithubIcon />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/eyob-kefale-b017a6230/"
-                className="social-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                id="social-linkedin"
-              >
-                <LinkedinIcon />
-              </a>
-              <a
-                href="https://www.instagram.com/eyob_kefale/"
-                className="social-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                id="social-instagram"
-              >
-                <InstagramIcon />
-              </a>
-              <a
-                href="https://www.facebook.com/eyob.kefia"
-                className="social-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                id="social-facebook"
-              >
-                <FacebookIcon />
-              </a>
+            {/* Social Media Links */}
+            <div className="contact-social-row">
+              <span className="social-row-label">Connect across platforms:</span>
+              <div className="social-links-wrap">
+                <a
+                  href="https://github.com/eyob-kefale"
+                  className="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  id="social-github"
+                >
+                  <GithubIcon />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/eyob-kefale-b017a6230/"
+                  className="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  id="social-linkedin"
+                >
+                  <LinkedinIcon />
+                </a>
+                <a
+                  href="https://www.instagram.com/eyob_kefale/"
+                  className="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  id="social-instagram"
+                >
+                  <InstagramIcon />
+                </a>
+                <a
+                  href="https://www.facebook.com/eyob.kefia"
+                  className="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  id="social-facebook"
+                >
+                  <FacebookIcon />
+                </a>
+              </div>
             </div>
           </div>
-
-          <form className="contact-form" id="contact-form" onSubmit={(e) => e.preventDefault()}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
-                <input type="text" id="firstName" name="firstName" placeholder="Your Name" required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
-                <input type="text" id="lastName" name="lastName" placeholder="Your Surname" required />
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input type="email" id="email" name="email" placeholder="name@company.com" required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="subject">Subject</label>
-              <input type="text" id="subject" name="subject" placeholder="Project Inquiry / Hiring" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="message">Message</label>
-              <textarea id="message" name="message" placeholder="Details about your inquiry..." required />
-            </div>
-            <button type="submit" className="btn-submit" id="btn-submit">
-              Send Message
-              <SendIcon />
-            </button>
-          </form>
         </div>
       </div>
     </section>
