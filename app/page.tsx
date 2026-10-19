@@ -150,18 +150,10 @@ function LinkedinIcon() {
   );
 }
 
-function FacebookIcon() {
+function TelegramIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-    </svg>
-  );
-}
-
-function InstagramIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.943z" />
     </svg>
   );
 }
@@ -665,6 +657,12 @@ export default function Home() {
     subtitle: "",
   });
 
+  const [currentYear, setCurrentYear] = useState(2026);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -725,20 +723,10 @@ export default function Home() {
           <button
             type="button"
             className={`mobile-menu-btn ${mobileMenuOpen ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setMobileMenuOpen((prev) => !prev);
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setMobileMenuOpen((prev) => !prev);
-            }}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
             id="mobile-menu-btn"
-            style={{ cursor: "pointer", zIndex: 999999, position: "relative" }}
           >
             <span /><span /><span />
           </button>
@@ -749,7 +737,6 @@ export default function Home() {
       <div
         className={`mobile-nav-overlay ${mobileMenuOpen ? "open" : ""}`}
         id="mobile-nav-drawer"
-        style={{ display: mobileMenuOpen ? "flex" : "none" }}
         aria-hidden={!mobileMenuOpen}
       >
         <div className="mobile-nav-header">
@@ -761,11 +748,8 @@ export default function Home() {
             type="button"
             className="mobile-drawer-close"
             onClick={() => setMobileMenuOpen(false)}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              setMobileMenuOpen(false);
-            }}
             aria-label="Close menu"
+            style={{ touchAction: "manipulation" }}
           >
             ✕
           </button>
@@ -917,7 +901,7 @@ export default function Home() {
       <footer className="footer">
         <div className="footer-inner">
           <p className="footer-text">
-            © {new Date().getFullYear()} <span className="accent-text">Eyob Kefale</span>. All rights reserved. Full Stack Engineer.
+            © {currentYear} <span className="accent-text">Eyob Kefale</span>. All rights reserved. Full Stack Engineer.
           </p>
           <div className="footer-links">
             <a href="#hero">Home</a>
@@ -958,10 +942,16 @@ function AboutSection({
         <div className={`about-grid animate-in ${isInView ? "visible" : ""}`}>
           <div className="about-terminal-card">
             <div className="terminal-header">
-              <span className="terminal-dot red" />
-              <span className="terminal-dot yellow" />
-              <span className="terminal-dot green" />
+              <div className="terminal-dots">
+                <span className="terminal-dot red" />
+                <span className="terminal-dot yellow" />
+                <span className="terminal-dot green" />
+              </div>
               <span className="terminal-title">eyob@swe-workstation:~</span>
+              <div className="terminal-live-badge">
+                <span className="terminal-pulse-dot" />
+                <span>JSON Live</span>
+              </div>
             </div>
             <div className="terminal-body">
               <div className="terminal-row"><span className="term-prompt">$</span> <span className="term-cmd">whoami</span></div>
@@ -971,6 +961,10 @@ function AboutSection({
 
               {/* Clear, Beautiful Syntax-Highlighted JSON with Pulse Animation */}
               <div className="term-code" role="region" aria-label="profile.json content">
+                <div className="term-code-topbar">
+                  <span className="term-filename">📄 profile.json</span>
+                  <span className="term-lang">UTF-8 • JSON</span>
+                </div>
                 <div className="term-code-line"><span className="term-code-num">1</span><span className="json-brace">&#123;</span></div>
                 <div className="term-code-line"><span className="term-code-num">2</span>  <span className="json-key">&quot;role&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Fullstack Engineer&quot;</span><span className="json-punct">,</span></div>
                 <div className="term-code-line"><span className="term-code-num">3</span>  <span className="json-key">&quot;company&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Right tech solution plc&quot;</span><span className="json-punct">,</span></div>
@@ -978,8 +972,9 @@ function AboutSection({
                 <div className="term-code-line"><span className="term-code-num">5</span>  <span className="json-key">&quot;fellowship&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;ALX Software Engineering (12-Mo)&quot;</span><span className="json-punct">,</span></div>
                 <div className="term-code-line"><span className="term-code-num">6</span>  <span className="json-key">&quot;location&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Addis Ababa, Ethiopia&quot;</span><span className="json-punct">,</span></div>
                 <div className="term-code-line"><span className="term-code-num">7</span>  <span className="json-key">&quot;github_repos&quot;</span><span className="json-punct">:</span> <span className="json-number">47</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">8</span>  <span className="json-key">&quot;stack&quot;</span><span className="json-punct">:</span> <span className="json-bracket">[</span><span className="json-string">&quot;Next.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;React Native&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Node.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Telebirr API&quot;</span><span className="json-bracket">]</span><span className="json-cursor" /></div>
-                <div className="term-code-line"><span className="term-code-num">9</span><span className="json-brace">&#125;</span></div>
+                <div className="term-code-line"><span className="term-code-num">8</span>  <span className="json-key">&quot;kattis_rank&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;#7 (159.1 pts)&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line"><span className="term-code-num">9</span>  <span className="json-key">&quot;stack&quot;</span><span className="json-punct">:</span> <span className="json-bracket">[</span><span className="json-string">&quot;Next.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;React Native&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Node.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Telebirr API&quot;</span><span className="json-bracket">]</span><span className="json-cursor" /></div>
+                <div className="term-code-line"><span className="term-code-num">10</span><span className="json-brace">&#125;</span></div>
               </div>
 
               <div className="terminal-row"><span className="term-prompt">$</span> <span className="term-cmd">git status</span></div>
@@ -1068,7 +1063,7 @@ function AboutSection({
             </h3>
             <div className="timeline-highlight-pill">
               <span className="timeline-highlight-dot" />
-              <span>Selected Highlights (Key representative systems from broader multi-year commercial work)</span>
+              <span>⚠️ Sample highlights only — I have more experience beyond what&apos;s listed here. Key representative systems from broader multi-year commercial work.</span>
             </div>
           </div>
 
@@ -1298,6 +1293,7 @@ function ProjectsSection() {
                 </div>
               </div>
             </div>
+          ))}
         </div>
 
         {/* 47+ Repositories & Competitive Programming / Kattis Showcase */}
@@ -1311,7 +1307,7 @@ function ProjectsSection() {
               <h3 className="kattis-title">47+ Repositories &amp; ETCPC Practice Algorithms</h3>
               <p className="kattis-desc">
                 Beyond these highlighted production applications, my active engineering portfolio includes <strong>47 repositories</strong> across GitHub.
-                This spans complex algorithmic problem solving, data structures practice, and competitive solutions developed for the <strong>ETCPC (Ethiopian Collegiate Programming Contest)</strong>.
+                This spans complex algorithmic problem solving, data structures practice, and competitive solutions developed for the <strong>ETCPC (Ethiopian Collegiate Programming Contest)</strong> — holding an official standing of <strong>Rank #7 (Score: 159.1)</strong> on the Wolkite University Kattis problem-solving leaderboard.
               </p>
               <div className="kattis-stats-row">
                 <div className="kattis-stat-box">
@@ -1322,9 +1318,9 @@ function ProjectsSection() {
                   <span className="kattis-stat-num">ETCPC</span>
                   <span className="kattis-stat-lbl">Contest Algos</span>
                 </div>
-                <div className="kattis-stat-box">
-                  <span className="kattis-stat-num">WKU</span>
-                  <span className="kattis-stat-lbl">Kattis Rank</span>
+                <div className="kattis-stat-box highlight-stat">
+                  <span className="kattis-stat-num">Rank #7</span>
+                  <span className="kattis-stat-lbl">159.1 Pts (WKU)</span>
                 </div>
               </div>
               <div className="kattis-actions">
@@ -1357,9 +1353,13 @@ function ProjectsSection() {
                 className="kattis-img-link"
                 title="Click to view Wolkite University Kattis Leaderboard"
               >
+                <div className="kattis-rank7-callout">
+                  <span className="kattis-rank7-badge">🎯 Ranked 7th Place: Eyob Kefale</span>
+                  <span className="kattis-rank7-score">Score: 159.1 • Wolkite University</span>
+                </div>
                 <img
                   src="/kattis-leaderboard.png"
-                  alt="Wolkite University Kattis Problem Solving Leaderboard"
+                  alt="Wolkite University Kattis Problem Solving Leaderboard - Rank 7: Eyob Kefale"
                   className="kattis-leaderboard-img"
                   loading="lazy"
                 />
@@ -1612,24 +1612,15 @@ function ContactSection() {
                   <LinkedinIcon />
                 </a>
                 <a
-                  href="https://www.instagram.com/eyob_kefale/"
+                  href="https://t.me/eyobkefale"
                   className="social-link"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  id="social-instagram"
+                  aria-label="Telegram (@eyobkefale)"
+                  id="social-telegram"
+                  title="Telegram: @eyobkefale"
                 >
-                  <InstagramIcon />
-                </a>
-                <a
-                  href="https://www.facebook.com/eyob.kefia"
-                  className="social-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  id="social-facebook"
-                >
-                  <FacebookIcon />
+                  <TelegramIcon />
                 </a>
               </div>
             </div>
