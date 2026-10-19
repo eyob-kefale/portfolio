@@ -1354,7 +1354,10 @@ function ProjectsSection() {
                 title="Click to view Wolkite University Kattis Leaderboard"
               >
                 <div className="kattis-rank7-callout">
-                  <span className="kattis-rank7-badge">🎯 Ranked 7th Place: Eyob Kefale</span>
+                  <div className="kattis-rank7-left">
+                    <span className="kattis-rank7-badge">🎯 Ranked 7th Place:</span>
+                    <strong className="kattis-rank7-name">Eyob Kefale</strong>
+                  </div>
                   <span className="kattis-rank7-score">Score: 159.1 • Wolkite University</span>
                 </div>
                 <img
