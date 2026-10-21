@@ -358,16 +358,17 @@ body {
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 1.5rem;
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 550;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin-bottom: 1.25rem;
   color: var(--text-primary);
 }
 
 .hero-title .accent {
   color: var(--accent);
+  font-weight: 600;
   position: relative;
 }
 
@@ -472,6 +473,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  align-self: flex-start;
+  margin-top: 0.5rem;
   animation: fadeInRight 1s ease-out 0.3s both;
 }
 
@@ -493,6 +496,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
 }
 
 .hero-image-glow {
@@ -848,19 +852,27 @@ body {
 
 .project-image {
   position: relative;
-  aspect-ratio: 16/10;
+  height: 230px;
   overflow: hidden;
+  background: #090d14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .project-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .project-card:hover .project-image img {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .project-overlay {
@@ -1490,6 +1502,16 @@ body {
 
   .hero-inner {
     gap: 0.85rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .hero-image-wrapper {
+    order: -1 !important;
+  }
+
+  .hero-content {
+    order: 1 !important;
   }
 
   .hero-badges-group {
@@ -1505,7 +1527,9 @@ body {
   }
 
   .hero-title {
-    font-size: 1.85rem !important;
+    font-size: 1.35rem !important;
+    font-weight: 550 !important;
+    line-height: 1.3 !important;
     margin-bottom: 0.5rem !important;
   }
 
@@ -1646,10 +1670,22 @@ body {
   }
 
   .project-image {
-    aspect-ratio: 16/10 !important;
+    height: 190px !important;
+    aspect-ratio: auto !important;
     width: 100% !important;
-    height: auto !important;
+    background: #090d14 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     border-radius: 12px 12px 0 0 !important;
+  }
+
+  .project-image img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
   }
 
   .project-filters {
@@ -1793,34 +1829,35 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .badge-confidential {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.6);
+  background: rgba(30, 10, 10, 0.88);
+  border: 1px solid rgba(239, 68, 68, 0.7);
   color: #fca5a5;
 }
 
 .badge-live {
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.6);
+  background: rgba(6, 30, 20, 0.88);
+  border: 1px solid rgba(16, 185, 129, 0.7);
   color: #6ee7b7;
 }
 
 .badge-opensource {
-  background: rgba(201, 243, 29, 0.2);
-  border: 1px solid rgba(201, 243, 29, 0.6);
+  background: rgba(20, 26, 6, 0.88);
+  border: 1px solid rgba(201, 243, 29, 0.7);
   color: var(--accent);
 }
 
 .badge-production {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.6);
+  background: rgba(10, 20, 36, 0.88);
+  border: 1px solid rgba(59, 130, 246, 0.7);
   color: #93c5fd;
 }
 
@@ -3078,6 +3115,30 @@ body {
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+/* JSON line typing animation — uses --line-delay CSS var per line */
+.json-line-anim {
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: json-typeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--line-delay, 0s);
+}
+
+@keyframes json-typeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Neon count pulse for the repo number */
+.json-count-anim {
+  display: inline-block;
+  animation: count-glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes count-glow-pulse {
+  0%, 100% { text-shadow: 0 0 6px rgba(201, 243, 29, 0.6); color: #c9f31d; }
+  50%       { text-shadow: 0 0 18px rgba(201, 243, 29, 1), 0 0 30px rgba(201, 243, 29, 0.4); color: #e4ff60; }
 }
 
 /* ═══════════════════════════════════════════ */

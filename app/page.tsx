@@ -133,6 +133,15 @@ function ZoomInIcon() {
   );
 }
 
+function EyeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
 /* Social Icons */
 function GithubIcon() {
   return (
@@ -195,127 +204,7 @@ function useInView(options?: IntersectionObserverInit) {
   return { ref, isInView };
 }
 
-/* ─── Interactive Crack & Merge Image Component ─────────── */
 
-const SHARD_CONFIGS = [
-  { top: "0%", left: "0%", width: "33.4%", height: "33.4%", bgPos: "0% 0%", clip: "polygon(0 0, 100% 0, 85% 100%, 0 82%)", transform: "translate3d(-26px, -24px, 45px) rotate(-16deg) scale(0.92)" },
-  { top: "0%", left: "33.3%", width: "33.4%", height: "33.4%", bgPos: "50% 0%", clip: "polygon(0 0, 100% 0, 95% 85%, 15% 100%)", transform: "translate3d(6px, -30px, 60px) rotate(12deg) scale(0.88)" },
-  { top: "0%", left: "66.6%", width: "33.4%", height: "33.4%", bgPos: "100% 0%", clip: "polygon(0 0, 100% 0, 100% 90%, 5% 85%)", transform: "translate3d(30px, -20px, 35px) rotate(20deg) scale(0.9)" },
-  { top: "33.3%", left: "0%", width: "33.4%", height: "33.4%", bgPos: "0% 50%", clip: "polygon(0 18%, 85% 0, 100% 100%, 0 92%)", transform: "translate3d(-32px, 6px, 50px) rotate(-14deg) scale(0.9)" },
-  { top: "33.3%", left: "33.3%", width: "33.4%", height: "33.4%", bgPos: "50% 50%", clip: "polygon(15% 0, 95% 15%, 85% 100%, 0 85%)", transform: "translate3d(0px, 0px, 80px) rotate(6deg) scale(1.06)" },
-  { top: "33.3%", left: "66.6%", width: "33.4%", height: "33.4%", bgPos: "100% 50%", clip: "polygon(5% 15%, 100% 10%, 100% 100%, 15% 95%)", transform: "translate3d(32px, 8px, 45px) rotate(18deg) scale(0.91)" },
-  { top: "66.6%", left: "0%", width: "33.4%", height: "33.4%", bgPos: "0% 100%", clip: "polygon(0 8%, 100% 0, 85% 100%, 0 100%)", transform: "translate3d(-24px, 26px, 30px) rotate(-22deg) scale(0.88)" },
-  { top: "66.6%", left: "33.3%", width: "33.4%", height: "33.4%", bgPos: "50% 100%", clip: "polygon(0 15%, 85% 0, 100% 100%, 15% 100%)", transform: "translate3d(8px, 30px, 55px) rotate(10deg) scale(0.92)" },
-  { top: "66.6%", left: "66.6%", width: "33.4%", height: "33.4%", bgPos: "100% 100%", clip: "polygon(15% 5%, 100% 0, 100% 100%, 0 100%)", transform: "translate3d(26px, 24px, 40px) rotate(-14deg) scale(0.89)" },
-];
-
-function CrackMergeImage({
-  src,
-  alt,
-  className = "",
-  showBadge = true,
-  intervalSeconds = 3.5,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  showBadge?: boolean;
-  intervalSeconds?: number;
-}) {
-  const [isCracked, setIsCracked] = useState(false);
-  const [isMerging, setIsMerging] = useState(false);
-
-  // Automatically shatter (crack) and merge continuously with specified seconds
-  useEffect(() => {
-    const intervalMs = Math.max(2000, intervalSeconds * 1000);
-    const timer = setInterval(() => {
-      setIsCracked((prev) => {
-        if (prev) {
-          // Shards are currently separated: trigger merge & neon flash burst
-          setIsMerging(true);
-          setTimeout(() => setIsMerging(false), 750);
-          return false;
-        } else {
-          // Image is currently intact: shatter into 3D shards
-          return true;
-        }
-      });
-    }, intervalMs);
-
-    return () => clearInterval(timer);
-  }, [intervalSeconds]);
-
-  const toggleCrack = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setIsCracked((prev) => {
-      if (prev) {
-        setIsMerging(true);
-        setTimeout(() => setIsMerging(false), 750);
-        return false;
-      } else {
-        return true;
-      }
-    });
-  };
-
-  return (
-    <div
-      className={`crack-merge-container ${isCracked ? "is-cracked" : ""} ${className}`}
-      onClick={() => toggleCrack()}
-      title={`Auto-morphing every ${intervalSeconds}s • Tap to toggle instantly`}
-    >
-      {/* Pristine Intact Image */}
-      <div className="crack-original-layer">
-        <img
-          src={src}
-          alt={alt}
-          className="crack-original-img"
-        />
-      </div>
-
-      {/* Shattered Shards Layer */}
-      <div className="crack-shards-layer">
-        {SHARD_CONFIGS.map((shard, index) => (
-          <div
-            key={index}
-            className="crack-shard"
-            style={{
-              top: shard.top,
-              left: shard.left,
-              width: shard.width,
-              height: shard.height,
-              backgroundImage: `url(${src})`,
-              backgroundPosition: shard.bgPos,
-              backgroundSize: "300% 300%",
-              clipPath: shard.clip,
-              transform: isCracked ? shard.transform : "translate3d(0,0,0) rotate(0deg) scale(1)",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Merge Flash Burst */}
-      <div className={`crack-flash-overlay ${isMerging ? "merging" : ""}`} />
-
-      {/* Auto-cycle Status & Interactive Toggle Badge */}
-      {showBadge && (
-        <button
-          type="button"
-          className={`crack-badge-toggle ${isCracked ? "is-cracked" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleCrack();
-          }}
-          aria-label={isCracked ? "Auto Merging" : "Auto Shattering"}
-          title={`Auto shattering & merging every ${intervalSeconds}s (Click to toggle)`}
-        >
-          <span className="crack-status-pulse" />
-          {/* {isCracked ? "⚡ Shattered (Auto 3.5s)" : "✨ Intact (Auto 3.5s)"} */}
-        </button>
-      )}
-    </div>
-  );
-}
 
 /* ─── Lightbox Modal Component ───────────────────────────── */
 
@@ -402,7 +291,7 @@ const services = [
   {
     icon: <DatabaseIcon />,
     title: "Database Architecture",
-    description: "Structuring high-throughput data layers with MongoDB, normalized MySQL schemas, PostgreSQL, and Firebase Firestore.",
+    description: "Structuring high-throughput data layers with MongoDB, normalized MySQL schemas, and Firebase Firestore.",
     number: "05",
   },
   {
@@ -434,6 +323,25 @@ interface ProjectItem {
 }
 
 const projectsList: ProjectItem[] = [
+  {
+    id: "rightcommerce",
+    title: "RightCommerce — Mobile-First E-Commerce Web App",
+    category: ["all", "production", "web"],
+    description: "Developed a comprehensive mobile-first e-commerce web application for Right Tech Solution PLC. Features a full marketplace with product listings, featured items, sponsored ads, category browsing, WhatsApp & call integration, and a clean bilingual UI (Amharic/English). Built for real buyers and sellers.",
+    image: "/rightcommerce-mobile.png",
+    tags: ["Mobile-First", "E-Commerce", "PHP", "MySQL", "Right Tech", "Amharic UI"],
+    statusBadge: { label: "Production Web App", type: "production" },
+  },
+  {
+    id: "onstream-movie",
+    title: "OnStream — React Native Movie Streaming App",
+    category: ["all", "mobile", "opensource"],
+    description: "Collaborated with a fellow engineer to redevelop the OnStream movie and streaming application utilizing React Native and modern mobile tools. Features media browsing, responsive dark UI, movie details and trailers, and optimized streaming interfaces.",
+    image: "/onstream-app.jpg",
+    tags: ["React Native", "Expo", "Mobile App", "REST API", "Streaming"],
+    statusBadge: { label: "Open Source", type: "opensource" },
+    githubUrl: "https://github.com/Betelhemmekonnen/react-native-movie-app.git",
+  },
   {
     id: "addisgebeya",
     title: "AddisGebeya — Demand-Driven Marketplace Platform",
@@ -498,7 +406,7 @@ const projectsList: ProjectItem[] = [
     title: "Enterprise Stock Management System",
     category: ["all", "production"],
     description: "Architected and deployed a real-time inventory and stock control application featuring automatic low-stock notifications, transactional audits, normalized MySQL database schemas, and PHP backend logic to guarantee data consistency.",
-    image: "/project-dashboard.jpg",
+    image: "/stock-management-real.jpg",
     tags: ["PHP", "MySQL", "Inventory Control", "Transactional Audits"],
     statusBadge: { label: "Enterprise System", type: "production" },
   },
@@ -574,6 +482,7 @@ const experienceList = [
     location: "Addis Ababa, Ethiopia",
     period: "Nov 2024 — Present",
     tasks: [
+      "RightCommerce: Architected and built a mobile-first e-commerce web platform featuring real-time product marketplace listings, sponsored ads, category discovery, Amharic/English bilingual UI, and WhatsApp & direct call ordering workflows.",
       "AddisGebeya: Engineered a demand-driven marketplace connecting consumer demand to vendors with Telebirr API & webhooks payment processing, deployed as a Mini App inside Telebirr SuperApp.",
       "Ethiopian Diabetes Association (ethdiabetes.org): Built and launched the responsive official healthcare platform with CMS workflows, accessible UI, and optimized SEO.",
       "Enterprise Stock Management System: Architected a real-time inventory application with low-stock alerts, transactional audits, normalized MySQL schemas, and PHP logic.",
@@ -620,7 +529,7 @@ const skillCategories = [
   },
   {
     name: "Backend & APIs",
-    items: ["Node.js", "Express.js", "Nest.js", "PHP", "RESTful APIs", "Server-Side Rendering (SSR)", "Webhooks", "Telebirr API"],
+    items: ["Node.js", "Express.js", "PHP", "RESTful APIs", "Server-Side Rendering (SSR)", "Webhooks", "Telebirr API"],
   },
   {
     name: "Languages",
@@ -628,7 +537,7 @@ const skillCategories = [
   },
   {
     name: "Databases & Storage",
-    items: ["MongoDB", "MySQL", "PostgreSQL", "Firebase Firestore", "Normalized Schema Design"],
+    items: ["MongoDB", "MySQL", "Firebase Firestore", "Normalized Schema Design"],
   },
   {
     name: "DevOps, Security & Tools",
@@ -784,7 +693,7 @@ export default function Home() {
             </h1>
             <p className="hero-description" id="hero-description">
               Versatile Full-Stack &amp; Mobile Developer, <strong>ALX Software Engineering graduate</strong>,
-              and Wolkite University Software Engineering alumnus (CGPA: 3.67). Experienced
+              and Wolkite University Software Engineering alumnus. Experienced
               in building reverse e-commerce platforms, Telebirr SuperApp Mini Apps, healthcare platforms,
               and enterprise stock systems.
             </p>
@@ -810,15 +719,15 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Strict stats with 47 GitHub repos, CGPA, current status, and ALX */}
+            {/* Stats with 49 GitHub repos, current status, and ALX */}
             <div className="hero-stats">
               <div className="stat-item">
-                <div className="stat-number">47</div>
+                <div className="stat-number">49</div>
                 <div className="stat-label">GitHub Repos (Public &amp; Private)</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">3.67</div>
-                <div className="stat-label">BSc CGPA (Software Eng.)</div>
+                <div className="stat-number">3+</div>
+                <div className="stat-label">Years of Experience</div>
               </div>
               <div className="stat-item">
                 <div className="stat-number">Nov 2024</div>
@@ -834,12 +743,13 @@ export default function Home() {
           <div className="hero-image-wrapper">
             <div className="hero-image-glow" />
             <div className="hero-image-container">
-              {/* Profile Image with Automatic Shatter (Crack) in Pieces & Merge Animation! */}
-              <CrackMergeImage
+              <Image
                 src="/profile-suit.png"
                 alt="Eyob Kefale - Fullstack Engineer"
-                showBadge={true}
-                intervalSeconds={3.5}
+                fill
+                sizes="(max-width: 768px) 270px, (max-width: 1024px) 320px, 420px"
+                style={{ objectFit: "cover", objectPosition: "top center" }}
+                priority
               />
             </div>
             <div className="hero-floating-card card-1">
@@ -856,7 +766,7 @@ export default function Home() {
                 <GithubIcon />
               </div>
               <div className="floating-text">
-                <strong>47 Repositories</strong>
+                <strong>49 Repositories</strong>
                 <span>Public &amp; Private</span>
               </div>
             </div>
@@ -880,7 +790,7 @@ export default function Home() {
       <ServicesSection />
 
       {/* ───────── PORTFOLIO / PROJECTS SECTION ───────── */}
-      <ProjectsSection />
+      <ProjectsSection openLightbox={openLightbox} />
 
       {/* ───────── CERTIFICATES SECTION ───────── */}
       <CertificatesSection openLightbox={openLightbox} />
@@ -965,16 +875,16 @@ function AboutSection({
                   <span className="term-filename">📄 profile.json</span>
                   <span className="term-lang">UTF-8 • JSON</span>
                 </div>
-                <div className="term-code-line"><span className="term-code-num">1</span><span className="json-brace">&#123;</span></div>
-                <div className="term-code-line"><span className="term-code-num">2</span>  <span className="json-key">&quot;role&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Fullstack Engineer&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">3</span>  <span className="json-key">&quot;company&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Right tech solution plc&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">4</span>  <span className="json-key">&quot;education&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;BSc Software Eng (WKU, CGPA: 3.67)&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">5</span>  <span className="json-key">&quot;fellowship&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;ALX Software Engineering (12-Mo)&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">6</span>  <span className="json-key">&quot;location&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Addis Ababa, Ethiopia&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">7</span>  <span className="json-key">&quot;github_repos&quot;</span><span className="json-punct">:</span> <span className="json-number">47</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">8</span>  <span className="json-key">&quot;kattis_rank&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;#7 (159.1 pts)&quot;</span><span className="json-punct">,</span></div>
-                <div className="term-code-line"><span className="term-code-num">9</span>  <span className="json-key">&quot;stack&quot;</span><span className="json-punct">:</span> <span className="json-bracket">[</span><span className="json-string">&quot;Next.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;React Native&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Node.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Telebirr API&quot;</span><span className="json-bracket">]</span><span className="json-cursor" /></div>
-                <div className="term-code-line"><span className="term-code-num">10</span><span className="json-brace">&#125;</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0s"} as React.CSSProperties}><span className="term-code-num">1</span><span className="json-brace">&#123;</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.15s"} as React.CSSProperties}><span className="term-code-num">2</span>  <span className="json-key">&quot;role&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Fullstack Engineer&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.3s"} as React.CSSProperties}><span className="term-code-num">3</span>  <span className="json-key">&quot;company&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Right tech solution plc&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.45s"} as React.CSSProperties}><span className="term-code-num">4</span>  <span className="json-key">&quot;education&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;BSc Software Eng, Wolkite University&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.6s"} as React.CSSProperties}><span className="term-code-num">5</span>  <span className="json-key">&quot;fellowship&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;ALX Software Engineering (12-Mo)&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.75s"} as React.CSSProperties}><span className="term-code-num">6</span>  <span className="json-key">&quot;location&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;Addis Ababa, Ethiopia&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "0.9s"} as React.CSSProperties}><span className="term-code-num">7</span>  <span className="json-key">&quot;github_repos&quot;</span><span className="json-punct">:</span> <span className="json-number json-count-anim">49</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "1.05s"} as React.CSSProperties}><span className="term-code-num">8</span>  <span className="json-key">&quot;kattis_rank&quot;</span><span className="json-punct">:</span> <span className="json-string">&quot;#7 (159.1 pts)&quot;</span><span className="json-punct">,</span></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "1.2s"} as React.CSSProperties}><span className="term-code-num">9</span>  <span className="json-key">&quot;stack&quot;</span><span className="json-punct">:</span> <span className="json-bracket">[</span><span className="json-string">&quot;Next.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;React Native&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Node.js&quot;</span><span className="json-punct">,</span> <span className="json-string">&quot;Telebirr API&quot;</span><span className="json-bracket">]</span><span className="json-cursor" /></div>
+                <div className="term-code-line json-line-anim" style={{"--line-delay": "1.35s"} as React.CSSProperties}><span className="term-code-num">10</span><span className="json-brace">&#125;</span></div>
               </div>
 
               <div className="terminal-row"><span className="term-prompt">$</span> <span className="term-cmd">git status</span></div>
@@ -988,8 +898,8 @@ function AboutSection({
             <h3>Professional Summary</h3>
             <p>
               I&apos;m <strong>Eyob Kefale</strong>, a Software Engineer from Addis Ababa, Ethiopia.
-              I hold a <strong>BSc in Software Engineering from Wolkite University (WKU)</strong> with a
-              graduating <strong>CGPA of 3.67</strong>, alongside completion of the rigorous <strong>12-month
+              I hold a <strong>BSc in Software Engineering from Wolkite University (WKU)</strong>,
+              alongside completion of the rigorous <strong>12-month
                 ALX Software Engineering programme</strong>.
             </p>
             <p>
@@ -1018,7 +928,7 @@ function AboutSection({
                 className="btn-secondary"
                 id="about-github-btn"
               >
-                <GithubIcon /> View GitHub (47 Repos)
+                <GithubIcon /> View GitHub (49 Repos)
               </a>
             </div>
           </div>
@@ -1136,7 +1046,7 @@ function ServicesSection() {
 
 /* ─── Projects Section Component ─────────────────────────── */
 
-function ProjectsSection() {
+function ProjectsSection({ openLightbox }: { openLightbox: (imageSrc: string, title: string, subtitle?: string) => void }) {
   const { ref, isInView } = useInView();
   const [activeFilter, setActiveFilter] = useState<ProjectCategory>("all");
 
@@ -1198,7 +1108,11 @@ function ProjectsSection() {
               className={`project-card animate-in ${isInView ? "visible" : ""}`}
               id={`project-${project.id}`}
             >
-              <div className="project-image">
+              <div
+                className="project-image"
+                onClick={() => openLightbox(project.image, project.title, project.description)}
+                title="Click to view full image preview"
+              >
                 <img
                   src={project.image}
                   alt={project.title}
@@ -1224,6 +1138,18 @@ function ProjectsSection() {
                 </div>
 
                 <div className="project-overlay">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLightbox(project.image, project.title, project.description);
+                    }}
+                    className="project-link"
+                    aria-label={`View full preview of ${project.title}`}
+                    title="View full image preview"
+                  >
+                    <EyeIcon />
+                  </button>
                   {project.liveUrl && (
                     <a
                       href={project.liveUrl}
@@ -1231,17 +1157,19 @@ function ProjectsSection() {
                       rel="noopener noreferrer"
                       className="project-link"
                       aria-label={`View live site for ${project.title}`}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLinkIcon />
                     </a>
                   )}
-                  {project.githubUrl && !project.liveUrl && (
+                  {project.githubUrl && (
                     <a
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="project-link"
                       aria-label={`View GitHub repository for ${project.title}`}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <GithubIcon />
                     </a>
@@ -1289,6 +1217,17 @@ function ProjectsSection() {
                       <LockIcon />
                       It&apos;s confidential.
                     </span>
+                  )}
+                  {!project.liveUrl && !project.githubUrl && !project.isConfidential && (
+                    <button
+                      type="button"
+                      onClick={() => openLightbox(project.image, project.title, project.description)}
+                      className="btn-project-action btn-project-live"
+                      style={{ cursor: "pointer" }}
+                    >
+                      <EyeIcon />
+                      View Preview
+                    </button>
                   )}
                 </div>
               </div>
