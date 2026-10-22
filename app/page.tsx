@@ -745,7 +745,7 @@ export default function Home() {
             <div className="hero-image-container">
               <Image
                 src="/profile-suit.png"
-                alt="Eyob Kefale - Fullstack Engineer"
+                alt="Eyob Kefale - Full Stack Software Engineer and Mobile Developer"
                 fill
                 sizes="(max-width: 768px) 270px, (max-width: 1024px) 320px, 420px"
                 style={{ objectFit: "cover", objectPosition: "top center" }}
@@ -1115,7 +1115,7 @@ function ProjectsSection({ openLightbox }: { openLightbox: (imageSrc: string, ti
               >
                 <img
                   src={project.image}
-                  alt={project.title}
+                  alt={`${project.title} - Built by Eyob Kefale`}
                   className="project-card-img"
                   loading="lazy"
                 />
@@ -1361,7 +1361,7 @@ function CertificatesSection({
                 >
                   <img
                     src={cert.imageSrc}
-                    alt={cert.title}
+                    alt={`${cert.title} - Eyob Kefale Certificate`}
                     className="cert-card-img"
                     loading="lazy"
                   />
