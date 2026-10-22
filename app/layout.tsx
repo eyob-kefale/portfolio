@@ -26,6 +26,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  verification: {
+
+    google: "Ym7wzTQJuNPqlZLjm9a-stQfMNSq5WUYu3JlQ02yMUM", // Paste ONLY the code string from Search Console here
+  },
   title: {
     default: "Eyob Kefale | Full Stack Software Engineer & Mobile Developer",
     template: "%s | Eyob Kefale",
@@ -117,6 +121,8 @@ export const metadata: Metadata = {
   },
 };
 
+
+// 
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
